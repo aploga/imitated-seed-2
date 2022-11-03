@@ -18,7 +18,102 @@ const jquery = require('jquery');
 const diff = require('./cemerick-jsdifflib.js');
 const cookieParser = require('cookie-parser');
 const child_process = require('child_process');
+var wikiconfig = {};  
+const timeFormat = 'Y-m-d H:i:s';  // 날짜 및 시간 기본 형식
+var major = 4, minor = 20, revision = 0;
 const captchapng = require('captchapng');
+function getTime() { return Math.floor(new Date().getTime()); };
+function toDate(t) {
+	var cur = getTime();
+	// 초 단위 시간 구분
+	if (Math.abs(cur - Math.floor(Number(t)) * 1000) < Math.abs(cur - Math.floor(Number(t)))) {
+		t = Number(t) * 1000;
+	}
+	var date = new Date(Number(t));
+
+	var hour = date.getUTCHours(); hour = (hour < 10 ? "0" : "") + hour;
+	var min = date.getUTCMinutes(); min = (min < 10 ? "0" : "") + min;
+	var sec = date.getUTCSeconds(); sec = (sec < 10 ? "0" : "") + sec;
+	var year = date.getUTCFullYear();
+	var month = date.getUTCMonth() + 1; month = (month < 10 ? "0" : "") + month;
+	var day = date.getUTCDate(); day = (day < 10 ? "0" : "") + day;
+
+	return year + "-" + month + "-" + day + " " + hour + ":" + min + ":" + sec;
+}
+
+function generateTime(time, fmt) {
+	const d = time.split(' ')[0];
+	const t = time.split(' ')[1];
+
+	return `<time datetime="${d}T${t}.000Z" data-format="${fmt}">${time}</time>`;
+}
+//파서는 어려워
+	function verrev(v) {
+		var sp = v.split('.');
+		var maj = Number(sp[0]);
+		var min = Number(sp[1]);
+		var rev = Number(sp[2]);
+
+		if (major < maj) return true;
+		if (major > maj) return false;
+		if (minor < min) return true;
+		if (minor > min) return false;
+		if (revision <= rev) return true;
+		if (revision > rev) return false;
+		return true;
+	}
+function rndval(chars, length) {
+	var result = '';
+	var characters = chars;
+	var charactersLength = characters.length;
+	for (var i = 0; i < length; i++) {
+		result += characters.charAt(Math.floor(Math.random() * charactersLength));
+	}
+	return result;
+}
+	const html = {
+		escape(content = '') {
+			if (!content) content = '';
+			content = content.replace(/[&]/gi, '&amp;');
+			content = content.replace(/["]/gi, '&quot;');
+			content = content.replace(/[<]/gi, '&lt;');
+			content = content.replace(/[>]/gi, '&gt;');
+
+			return content;
+		}
+	};
+const conn = new sqlite3.Database('./wikidata.db', () => 0);  // 데이터베이스
+	const config = {
+		getString(str, def = '') {
+			if (wikiconfig[str] === undefined) {
+				curs.execute("insert into config (key, value) values (?, ?)", [str, def]);
+				wikiconfig[str] = def;
+				return def;
+			}
+			return wikiconfig[str];
+		}
+	};
+const curs = {
+	execute(sql, params = []) {
+		return new Promise((resolve, reject) => {
+			if (sql.toUpperCase().startsWith("SELECT")) {
+				conn.all(sql, params, (err, retval) => {
+					if (err) return reject(err);
+					conn.sd = retval;
+					resolve(retval);
+				});
+			} else {
+				conn.run(sql, params, err => {
+					if (err) return reject(err);
+					resolve(0);
+				});
+			}
+		});
+	}
+};
+	function fetchNamespaces() {
+		return ['문서', '틀', '분류', '파일', '사용자', '특수기능', config.getString('wiki.site_name', '더 시드'), '토론', '휴지통', '투표'].concat(hostconfig.custom_namespaces || []);
+	}
 	function processTitle(d) {
 		const sp = d.split(':');
 		var ns = sp.length > 1 ? sp[0] : '문서';

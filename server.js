@@ -34,7 +34,7 @@ var major = 4, minor = 12, revision = 0;
 var _ready = 0;
 
 const wiki = express();  // 서버
-const conn = new sqlite3.Database('./wikidata.db', () => 0);  // 데이타베이스
+const conn = new sqlite3.Database('./wikidata.db', () => 0);  // 데이터베이스
 const upload = multer();  // 파일 올리기 모듈
 
 var wikiconfig = {};  // 위키 설정 캐시
@@ -1572,6 +1572,34 @@ try {
 		res.sendFile(filepath, { root: './css' });
 	});
 
+	function processTitle(d) {
+		const sp = d.split(':');
+		var ns = sp.length > 1 ? sp[0] : '문서';
+		var title = d;
+		var forceShowNamespace = false;
+		var nslist = fetchNamespaces();
+		if (nslist.includes(ns)) {
+			title = d.replace(ns + ':', '');
+			if (sp[2] !== undefined && ns == '문서' && nslist.includes(sp[1])) {
+				forceShowNamespace = true;
+			}
+		} else {
+			title = d;
+			ns = '문서';
+		}
+
+		return {
+			title,
+			namespace: ns,
+			forceShowNamespace,
+			toString() {
+				if (forceShowNamespace || this.namespace != '문서')
+					return this.namespace + ':' + title;
+				else
+					return title;
+			}
+		};
+	}
 
 	function totitle(t, ns) {
 		const nslist = fetchNamespaces();
