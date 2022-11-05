@@ -1684,6 +1684,7 @@ try {
 			<ul class=wiki-list>
 				<li><a href="https://github.com/gdl-blue">github@gdl-blue</a> (source code)</li>
 				<li><a href="https://github.com/JeonDohyeon">github@JeonDohyeon</a> (server flight & skin modifications)</li>
+				<li><a href="https://aplo.ga">aploga@aploga</a> (some part of parser and some features)
 				${ispatched ? (patcher.includes('github@') ? `<li><a href="https://github.com/${patcher.split('@')[1]}">${patcher}</a> (patcher)
 				` : (patcher == "JeonDohyeon" ? '' : `<li>${patcher} (patcher)
 				`)) : ''}
