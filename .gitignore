@@ -3,3 +3,4 @@ js/*.js
 - js/banana.js
 node_modules/
 *.db
+config.json
