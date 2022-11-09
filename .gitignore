@@ -4,3 +4,4 @@ js/*.js
 - **/.keep_folder
 node_modules/
 *.db
+config.json
